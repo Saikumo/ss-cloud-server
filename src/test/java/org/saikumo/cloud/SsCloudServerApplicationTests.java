@@ -1,4 +1,4 @@
-package org.saikumo.sscloudserver;
+package org.saikumo.cloud;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
