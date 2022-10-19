@@ -1,17 +1,14 @@
 package org.saikumo.cloud.controller;
 
-import org.saikumo.cloud.ApiResult;
-import org.saikumo.cloud.dto.FileDto;
+import org.saikumo.cloud.common.ApiResult;
 import org.saikumo.cloud.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/api/file")
@@ -21,26 +18,16 @@ public class FileController {
 	FileService fileService;
 
 	@GetMapping("/")
-	public ApiResult listFile(@RequestParam("filePath") String filePath) {
+	public ApiResult listFile(@RequestParam("filePath") @NotBlank String filePath) {
 		return fileService.listFile(filePath);
 	}
 
-
-
-//	@PostMapping("/upload")
-//	public ApiResult uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-//		String filePath = "D:\\Programming\\Project\\ss-cloud-server\\src\\main\\resources\\static";
-//		File targetFile = new File(filePath, file.getOriginalFilename());
-//		// delete file if it exists
-//		if (targetFile.exists()) {
-//			targetFile.delete();
-//		}
-//
-//		file.transferTo(targetFile);
-//
-//		return ApiResult.ok();
-//	}
-
+	@PostMapping("/upload")
+	public ApiResult uploadFile(@RequestBody @NotNull MultipartFile multipartFile,
+								@RequestParam("filePath") @NotBlank String filePath,
+								@RequestParam("overwriteFlag") @NotNull Boolean overwriteFlag) {
+		return fileService.uploadFile(multipartFile, filePath, overwriteFlag);
+	}
 
 
 //	@PostMapping("/download")

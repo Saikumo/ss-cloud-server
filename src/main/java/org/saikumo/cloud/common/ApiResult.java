@@ -1,4 +1,4 @@
-package org.saikumo.cloud;
+package org.saikumo.cloud.common;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,8 +10,8 @@ public class ApiResult<T> {
 	private String statusMessage;
 	private T data;
 
-	private static final Integer SUCCESS_STATUS_CODE = 200;
-	private static final Integer FAILURE_STATUS_CODE = 500;
+	private static final Integer SUCCESS_STATUS_CODE = 20000;
+	private static final Integer FAILURE_STATUS_CODE = 50000;
 
 	private ApiResult(Integer statusCode) {
 		this.statusCode = statusCode;
@@ -34,6 +34,10 @@ public class ApiResult<T> {
 
 	public static <T> ApiResult<T> failure(String statusMessage) {
 		return new ApiResult<>(FAILURE_STATUS_CODE, statusMessage);
+	}
+
+	public static <T> ApiResult<T> of(ApiStatus apiStatus){
+		return new ApiResult<>(apiStatus.getStatusCode(),apiStatus.getStatusMessage());
 	}
 }
 
