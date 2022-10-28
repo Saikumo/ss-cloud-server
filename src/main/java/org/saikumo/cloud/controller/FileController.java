@@ -1,14 +1,15 @@
 package org.saikumo.cloud.controller;
 
 import org.saikumo.cloud.common.ApiResult;
+import org.saikumo.cloud.dto.FileDto;
 import org.saikumo.cloud.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/file")
@@ -18,16 +19,19 @@ public class FileController {
 	FileService fileService;
 
 	@GetMapping("/")
-	public ApiResult listFile(@RequestParam("filePath") @NotBlank String filePath) {
+	public ApiResult<List<FileDto>> listFile(@RequestParam("filePath") @NotBlank String filePath) {
 		return fileService.listFile(filePath);
 	}
 
 	@PostMapping("/upload")
-	public ApiResult uploadFile(@RequestBody @NotNull MultipartFile multipartFile,
+	public ApiResult<?> uploadFile(@RequestBody @NotNull MultipartFile multipartFile,
 								@RequestParam("filePath") @NotBlank String filePath,
 								@RequestParam("overwriteFlag") @NotNull Boolean overwriteFlag) {
 		return fileService.uploadFile(multipartFile, filePath, overwriteFlag);
 	}
+
+//	@GetMapping("/download")
+//	public
 
 
 //	@PostMapping("/download")

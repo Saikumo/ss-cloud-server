@@ -10,7 +10,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,66 +21,67 @@ import java.util.Objects;
 @Slf4j
 public class FileService {
 
-	public ApiResult<List<FileDto>> listFile(String filePath) {
-		log.info("list file, filePath = {}", filePath);
-		File file = new File(Constant.fileBasePath + filePath);
+    public ApiResult<List<FileDto>> listFile(String filePath) {
+        log.info("list file, filePath = {}", filePath);
+        File file = new File(Constant.fileBasePath + filePath);
 
-		File[] fileArray = file.listFiles();
-		List<FileDto> fileDtoList = new ArrayList<>();
+        File[] fileArray = file.listFiles();
+        List<FileDto> fileDtoList = new ArrayList<>();
 
-		if (!ObjectUtils.isEmpty(fileArray)) {
-			for (File item : fileArray) {
-				Instant instant = Instant.ofEpochMilli(item.lastModified());
-				ZoneId zoneId = ZoneId.systemDefault();
+        if (!ObjectUtils.isEmpty(fileArray)) {
+            for (File item : fileArray) {
+                Instant instant = Instant.ofEpochMilli(item.lastModified());
+                ZoneId zoneId = ZoneId.systemDefault();
 
-				// pack FileDto
-				FileDto fileDto = new FileDto();
-				fileDto.setFileName(item.getName());
-				fileDto.setLastModifiedTime(LocalDateTime.ofInstant(instant, zoneId));
-				fileDto.setFileSize(item.length());
-				fileDto.setIsDirectory(item.isDirectory());
-				fileDto.setFilePath(item.getPath().replace("\\", "/")
-						.replace(Constant.fileBasePath, ""));
+                // build FileDto
+                FileDto fileDto = FileDto.builder()
+                        .fileName(item.getName())
+                        .lastModifiedTime(LocalDateTime.ofInstant(instant, zoneId))
+                        .fileSize(item.length())
+                        .isDirectory(item.isDirectory())
+                        .filePath(item.getPath().replace("\\","/")
+                                .replace(Constant.fileBasePath,""))
+                        .build();
 
-				fileDtoList.add(fileDto);
-			}
-		}
+                fileDtoList.add(fileDto);
+            }
+        }
 
-		return ApiResult.success(fileDtoList);
-	}
+        return ApiResult.success(fileDtoList);
+    }
 
-	public ApiResult<?> uploadFile(MultipartFile multipartFile, String filePath, Boolean overwriteFlag) {
-		log.info("upload file, filePath = {}, fileName = {}", filePath, multipartFile.getOriginalFilename());
-		File targetFile = new File(Constant.fileBasePath + filePath,
-				Objects.requireNonNull(multipartFile.getOriginalFilename()));
+    public ApiResult<?> uploadFile(MultipartFile multipartFile, String filePath, Boolean overwriteFlag) {
+        log.info("upload file, filePath = {}, fileName = {}", filePath, multipartFile.getOriginalFilename());
+        File targetFile = new File(Constant.fileBasePath + filePath,
+                Objects.requireNonNull(multipartFile.getOriginalFilename()));
 
-		// whether overwrite
-		if (targetFile.exists()) {
-			// overwrite
-			if (overwriteFlag) {
-				log.info("overwrite file, filePath = {}, fileName = {}", filePath, multipartFile.getOriginalFilename());
-				if (!targetFile.delete()) {
-					log.error("overwrite file failed, filePath = {}, fileName = {}", filePath,
-							multipartFile.getOriginalFilename());
-					return ApiResult.of(ApiStatus.DELETE_FILE_FAILURE);
-				}
-			} else {
-				// not overwrite
-				log.info("file exists and not overwrite, filePath = {}, fileName = {}", filePath,
-						multipartFile.getOriginalFilename());
-				return ApiResult.of(ApiStatus.FILE_EXIST_AND_NOT_OVERWRITE);
-			}
-		}
+        // whether overwrite
+        if (targetFile.exists()) {
+            // overwrite
+            if (overwriteFlag) {
+                log.info("overwrite file, filePath = {}, fileName = {}", filePath, multipartFile.getOriginalFilename());
+                if (!targetFile.delete()) {
+                    log.error("overwrite file failed, filePath = {}, fileName = {}", filePath,
+                            multipartFile.getOriginalFilename());
+                    return ApiResult.of(ApiStatus.DELETE_FILE_FAILURE);
+                }
+            } else {
+                // not overwrite
+                log.info("file exists and not overwrite, filePath = {}, fileName = {}", filePath,
+                        multipartFile.getOriginalFilename());
+                return ApiResult.of(ApiStatus.FILE_EXIST_AND_NOT_OVERWRITE);
+            }
+        }
 
-		// save file
-		try {
-			multipartFile.transferTo(targetFile);
-		} catch (Exception e) {
-			log.error("save file failed, filePath = {}, fileName = {}", filePath,
-					multipartFile.getOriginalFilename());
-			return ApiResult.failure(e.getMessage());
-		}
+        // save file
+        try {
+            multipartFile.transferTo(targetFile);
+        } catch (Exception e) {
+            log.error("save file failed, filePath = {}, fileName = {}", filePath,
+                    multipartFile.getOriginalFilename());
+            return ApiResult.failure(e.getMessage());
+        }
 
-		return ApiResult.success();
-	}
+        return ApiResult.success();
+    }
 }
